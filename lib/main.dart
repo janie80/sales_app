@@ -47,8 +47,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         '/role_selection': (context) => const RoleSelectionScreen(),
-        '/sales_rep_login': (context) => SalesRepLoginScreen(),
-        '/sales_rep_signup': (context) => SalesRepSignUpScreen(),
+        '/sales_rep_login': (context) => const SalesRepLoginScreen(),
+        '/sales_rep_signup': (context) => const SalesRepSignUpScreen(),
         '/admin_login': (context) => AdminLoginScreen(),
         '/admin_dashboard': (context) => const AdminDashboard(),
         '/manage_products': (context) => const ManageProducts(),

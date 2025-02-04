@@ -1,18 +1,20 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../models/user_details.dart';
 import '../models/user_model.dart';
+import '../services/user_storage.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserStorage _userStorage = UserStorage();
 
   // Admin credentials
   final String adminEmail = dotenv.env['ADMIN_EMAIL'] ?? 'admin@gmail.com';
   final String adminPassword = dotenv.env['ADMIN_PASSWORD'] ?? 'admin1234';
 
   // Sign in for Admin
-  Future<UserModel?> signInAdmin(String email, String password) async {
+  Future<PigeonUserDetails?> signInAdmin(String email, String password) async {
     try {
       // Validate admin credentials
       if (email == adminEmail && password == adminPassword) {
@@ -20,7 +22,13 @@ class AuthService {
         UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
         User? user = result.user;
         if (user != null) {
-          return UserModel(uid: user.uid, email: user.email!);
+          // Create PigeonUserDetails object with the passed values
+          PigeonUserDetails pigeonUserDetails = PigeonUserDetails(
+            uid: user.uid,
+            email: user.email!,
+            name: 'Admin Name', // Provide the admin's name here
+          );
+          return pigeonUserDetails;
         }
       } else {
         print('Invalid admin credentials');
@@ -33,15 +41,19 @@ class AuthService {
   }
 
   // Sign in for Sales Rep
-  Future<UserModel?> signInSalesRep(String email, String password) async {
+  Future<PigeonUserDetails?> signInSalesRep(String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
       User? user = result.user;
       if (user != null) {
-        // Fetch user data from Firestore
-        DocumentSnapshot doc = await _firestore.collection('Users').doc(user.uid).get();
-        if (doc.exists) {
-          return UserModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+        // Fetch user data from Firestore using UserStorage
+        UserModel? userModel = await _userStorage.getUser(user.uid);
+        if (userModel != null) {
+          return PigeonUserDetails(
+            uid: userModel.uid,
+            email: userModel.email,
+            name: 'Sales Rep Name', // Provide the sales rep's name here
+          );
         } else {
           print('User not found in Firestore');
           return null;
@@ -55,16 +67,20 @@ class AuthService {
   }
 
   // Sign up for Sales Rep
-  Future<UserModel?> signUpSalesRep(String email, String password) async {
+  Future<PigeonUserDetails?> signUpSalesRep(String email, String password) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       User? user = result.user;
       if (user != null) {
-        // Store user data in Firestore
-        await _firestore.collection('Users').doc(user.uid).set({
-          'email': email,
-        });
-        return UserModel(uid: user.uid, email: user.email!);
+        // Create UserModel object
+        UserModel userModel = UserModel(uid: user.uid, email: user.email!);
+        // Save user to Firestore using UserStorage
+        await _userStorage.saveUser(userModel);
+        return PigeonUserDetails(
+          uid: user.uid,
+          email: user.email!,
+          name: 'Sales Rep Name', // Provide the sales rep's name here
+        );
       }
       return null;
     } catch (e) {

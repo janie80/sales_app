@@ -26,7 +26,7 @@ class ProfileScreen extends StatelessWidget {
                 await authService.signOut(); // Sign out the user
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => SalesRepLoginScreen()), // Redirect to login screen
+                  MaterialPageRoute(builder: (_) => const SalesRepLoginScreen()), // Redirect to login screen
                 );
               },
               child: const Text('Logout'),

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:sales_app/screens/admin/view_sales_data.dart';
 import '../../services/auth_service.dart';
 import '../auth/admin_login_screen.dart';
-import '../auth/sales_rep_login_screen.dart';
 import 'package:sales_app/screens/admin/manage_products.dart';
 import 'package:sales_app/screens/admin/manage_customers.dart';
 import 'package:sales_app/screens/admin/manage_orders.dart';

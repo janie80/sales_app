@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sales_app/screens/auth/sales_rep_login_screen.dart';
 import 'package:sales_app/services/auth_service.dart';
-import 'package:sales_app/models/user_model.dart';
 
 class SalesRepSignUpScreen extends StatefulWidget {
   const SalesRepSignUpScreen({super.key});

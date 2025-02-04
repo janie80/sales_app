@@ -17,7 +17,7 @@ class SalesRepDashboard extends StatelessWidget {
           onPressed: () async {
             final authService = Provider.of<AuthService>(context, listen: false);
             await authService.signOut();
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SalesRepLoginScreen()));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SalesRepLoginScreen()));
           },
         ),
       ]),

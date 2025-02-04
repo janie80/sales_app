@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sales_app/services/auth_service.dart';
-import 'package:sales_app/models/user_model.dart';
-import 'package:sales_app/screens/sales_rep/sales_rep_dashboard.dart'; // Import the Sales Rep dashboard
-import 'package:sales_app/screens/auth/sales_rep_signup_screen.dart'; // Import the Sales Rep signup screen
+import 'package:sales_app/screens/sales_rep/sales_rep_dashboard.dart';
+import 'package:sales_app/screens/auth/sales_rep_signup_screen.dart';
 
 class SalesRepLoginScreen extends StatefulWidget {
   const SalesRepLoginScreen({super.key});
@@ -15,7 +15,7 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  bool _obscureText = true; // Toggle password visibility
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,10 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email')),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -56,7 +59,9 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
 
                 final user = await _authService.signInSalesRep(email, password);
                 if (user != null) {
-                  print('Sales Rep signed in: ${user.email}');
+                  if (kDebugMode) {
+                    print('Sales Rep signed in: ${user.email}');
+                  }
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const SalesRepDashboard()),
@@ -73,7 +78,7 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SalesRepSignUpScreen()), // Navigate to Signup Screen
+                  MaterialPageRoute(builder: (context) => const SalesRepSignUpScreen()),
                 );
               },
               child: const Text("Don't have an account? Sign up"),
