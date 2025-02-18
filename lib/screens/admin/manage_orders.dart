@@ -4,15 +4,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sales_app/services/firestore_service.dart';
 import 'package:sales_app/models/order_model.dart';
 
-class ManageOrders extends StatelessWidget {
+class ManageOrders extends StatefulWidget {
   const ManageOrders({super.key});
 
   @override
+  _ManageOrdersState createState() => _ManageOrdersState();
+}
+
+class _ManageOrdersState extends State<ManageOrders> {
+  final TextEditingController quantityController = TextEditingController();
+  String? selectedCustomerId;
+  String? selectedProductId;
+
+  @override
   Widget build(BuildContext context) {
-    final firestoreService = Provider.of<FirestoreService>(context);
-    final TextEditingController quantityController = TextEditingController();
-    String? selectedCustomerId;
-    String? selectedProductId;
+    final firestoreService = Provider.of<FirestoreService>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Orders')),
@@ -39,7 +45,7 @@ class ManageOrders extends StatelessWidget {
                     );
                   }).toList(),
                   onChanged: (value) {
-                    selectedCustomerId = value;
+                    setState(() => selectedCustomerId = value);
                   },
                 );
               },
@@ -64,14 +70,18 @@ class ManageOrders extends StatelessWidget {
                     );
                   }).toList(),
                   onChanged: (value) {
-                    selectedProductId = value;
+                    setState(() => selectedProductId = value);
                   },
                 );
               },
             ),
 
             // Quantity Input
-            TextField(controller: quantityController, decoration: const InputDecoration(labelText: 'Quantity'), keyboardType: TextInputType.number),
+            TextField(
+              controller: quantityController,
+              decoration: const InputDecoration(labelText: 'Quantity'),
+              keyboardType: TextInputType.number,
+            ),
 
             // Add Order Button
             ElevatedButton(
@@ -82,11 +92,13 @@ class ManageOrders extends StatelessWidget {
                 }
 
                 final order = OrderModel(
-                  id: DateTime.now().toString(),
+                  id: FirebaseFirestore.instance.collection('Orders').doc().id,
                   customerId: selectedCustomerId!,
                   productId: selectedProductId!,
                   quantity: int.parse(quantityController.text.trim()),
+                  timestamp: Timestamp.now(), // ✅ Firestore-friendly timestamp
                 );
+
                 firestoreService.addOrder(order);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order added')));
               },
@@ -111,22 +123,27 @@ class ManageOrders extends StatelessWidget {
                         title: FutureBuilder<DocumentSnapshot>(
                           future: FirebaseFirestore.instance.collection('Customers').doc(order['customerId']).get(),
                           builder: (context, snapshot) {
-                            if (snapshot.hasData) {
+                            if (snapshot.hasData && snapshot.data!.exists) {
                               final customer = snapshot.data!.data() as Map<String, dynamic>;
                               return Text('Customer: ${customer['name']}');
                             }
-                            return const Text('Loading...');
+                            return const Text('Customer: Loading...');
                           },
                         ),
                         subtitle: FutureBuilder<DocumentSnapshot>(
                           future: FirebaseFirestore.instance.collection('Products').doc(order['productId']).get(),
                           builder: (context, snapshot) {
-                            if (snapshot.hasData) {
+                            if (snapshot.hasData && snapshot.data!.exists) {
                               final product = snapshot.data!.data() as Map<String, dynamic>;
                               return Text('Product: ${product['name']}, Quantity: ${order['quantity']}');
                             }
-                            return const Text('Loading...');
+                            return const Text('Product: Loading...');
                           },
+                        ),
+                        trailing: Text(
+                          order['timestamp'] != null
+                              ? (order['timestamp'] as Timestamp).toDate().toString() // ✅ Convert Timestamp to DateTime
+                              : 'No Timestamp',
                         ),
                       );
                     },

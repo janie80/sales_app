@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import flutter_dotenv
 import 'package:provider/provider.dart';
 import 'firebase_options.dart'; // Firebase configuration file
 import 'screens/auth/sales_rep_login_screen.dart'; // Sales Rep Login screen
@@ -12,17 +13,25 @@ import 'screens/admin/manage_customers.dart'; // Manage customers screen
 import 'screens/admin/manage_orders.dart'; // Manage orders screen
 import 'screens/admin/view_sales_data.dart'; // View sales data screen
 import 'screens/sales_rep/sales_rep_dashboard.dart'; // Sales Rep dashboard
-import 'screens/sales_rep/submit_data.dart'; // Submit data screen
+import 'screens/sales_rep/submit_data.dart';
+import 'screens/sales_rep/task_list.dart';// Submit data screen
 import 'screens/common/profile_screen.dart'; // Profile screen
 import 'screens/common/error_screen.dart'; // Error screen
 import 'services/auth_service.dart'; // Authentication service
 import 'services/firestore_service.dart'; // Firestore service
 import 'services/user_provider.dart'; // User provider for state management
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env"); // Load the .env file
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseAppCheck.instance.activate(
+    webProvider: ReCaptchaV3Provider(dotenv.env['RECAPTCHA_SITE_KEY']!), // ✅ Updated API
+    androidProvider: AndroidProvider.debug,
+  );
+
   runApp(
     MultiProvider(
       providers: [
@@ -49,7 +58,7 @@ class MyApp extends StatelessWidget {
         '/role_selection': (context) => const RoleSelectionScreen(),
         '/sales_rep_login': (context) => const SalesRepLoginScreen(),
         '/sales_rep_signup': (context) => const SalesRepSignUpScreen(),
-        '/admin_login': (context) => AdminLoginScreen(),
+        '/admin_login': (context) => const AdminLoginScreen(),
         '/admin_dashboard': (context) => const AdminDashboard(),
         '/manage_products': (context) => const ManageProducts(),
         '/manage_customers': (context) => const ManageCustomers(),
@@ -57,6 +66,8 @@ class MyApp extends StatelessWidget {
         '/view_sales_data': (context) => const ViewSalesData(),
         '/sales_rep_dashboard': (context) => const SalesRepDashboard(),
         '/submit_data': (context) => const SubmitData(),
+        '/task_list': (context) => const TaskList(),  // ✅ Add TaskList here
+
         '/profile': (context) => const ProfileScreen(),
         '/error': (context) => const ErrorScreen(errorMessage: 'An error occurred'),
       },

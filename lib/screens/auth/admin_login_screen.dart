@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sales_app/services/auth_service.dart';
 import 'package:sales_app/screens/admin/admin_dashboard.dart';
+import '../../models/user_model.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -26,12 +26,21 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                hintText: 'Enter your email',
+                prefixIcon: Icon(Icons.email),
+              ),
+              keyboardType: TextInputType.emailAddress,
             ),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _passwordController,
+              obscureText: _obscurePassword,
               decoration: InputDecoration(
                 labelText: 'Password',
+                hintText: 'Enter your password',
+                prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -43,25 +52,37 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   },
                 ),
               ),
-              obscureText: _obscurePassword,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
-                final email = _emailController.text.trim();
-                final password = _passwordController.text.trim();
-                final user = await _authService.signInAdmin(email, password);
-                if (user != null) {
-                  if (kDebugMode) {
-                    print('Admin signed in: ${user.email}');
+                String email = _emailController.text.trim();
+                String password = _passwordController.text.trim();
+
+                if (email.isNotEmpty && password.isNotEmpty) {
+                  try {
+                    UserModel? adminUser = await _authService.signInAdmin(email, password);
+                    if (adminUser != null) {
+                      if (!mounted) return; // Prevents calling setState on a disposed widget
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AdminDashboard()),
+                      );
+                    } else {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Login failed. Please check credentials.')),
+                      );
+                    }
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: ${e.toString()}')),
+                    );
                   }
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminDashboard()),
-                  );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid admin credentials')),
+                    const SnackBar(content: Text('Please enter both email and password.')),
                   );
                 }
               },
@@ -71,5 +92,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

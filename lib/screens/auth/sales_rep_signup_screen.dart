@@ -13,7 +13,7 @@ class _SalesRepSignUpScreenState extends State<SalesRepSignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  bool _obscureText = true; // Toggle password visibility
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,6 @@ class _SalesRepSignUpScreenState extends State<SalesRepSignUpScreen> {
                 final user = await _authService.signUpSalesRep(email, password);
                 if (user != null) {
                   print('Sales Rep signed up: ${user.email}');
-                  // Redirect to Sales Rep Login
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const SalesRepLoginScreen()),

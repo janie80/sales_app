@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class SalesDataModel {
   final String id;
   final String salesRepId;
@@ -5,7 +7,7 @@ class SalesDataModel {
   final String contact;
   final String voucherNumber;
   final String notes;
-  final DateTime timestamp;
+  final Timestamp timestamp; // Change to Firestore Timestamp
 
   SalesDataModel({
     required this.id,
@@ -16,4 +18,29 @@ class SalesDataModel {
     required this.notes,
     required this.timestamp,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'salesRepId': salesRepId,
+      'customerName': customerName,
+      'contact': contact,
+      'voucherNumber': voucherNumber,
+      'notes': notes,
+      'timestamp': timestamp,
+    };
+  }
+
+  factory SalesDataModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return SalesDataModel(
+      id: doc.id,
+      salesRepId: data['salesRepId'] ?? '',
+      customerName: data['customerName'] ?? '',
+      contact: data['contact'] ?? '',
+      voucherNumber: data['voucherNumber'] ?? '',
+      notes: data['notes'] ?? '',
+      timestamp: data['timestamp'] ?? Timestamp.now(), // Use Timestamp.now() as default
+    );
+  }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sales_app/services/auth_service.dart';
 import 'package:sales_app/screens/sales_rep/sales_rep_dashboard.dart';
 import 'package:sales_app/screens/auth/sales_rep_signup_screen.dart';
+import 'package:get/get.dart'; // Make sure you have GetX package in your dependencies
 
 class SalesRepLoginScreen extends StatefulWidget {
   const SalesRepLoginScreen({super.key});
@@ -74,6 +75,7 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
               },
               child: const Text('Login'),
             ),
+            const SizedBox(height: 20),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -81,21 +83,19 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
                   MaterialPageRoute(builder: (context) => const SalesRepSignUpScreen()),
                 );
               },
-              child: const Text("Don't have an account? Sign up"),
+              child: const Text('Sign Up'),
             ),
             TextButton(
               onPressed: () async {
                 final email = _emailController.text.trim();
-                if (email.isNotEmpty) {
-                  await _authService.resetPassword(email);
+                if (email.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Password reset email sent')),
+                    const SnackBar(content: Text('Please enter your email to reset your password')),
                   );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter your email')),
-                  );
+                  return;
                 }
+
+                await resetPassword(email);
               },
               child: const Text('Forgot Password?'),
             ),
@@ -104,4 +104,19 @@ class _SalesRepLoginScreenState extends State<SalesRepLoginScreen> {
       ),
     );
   }
+
+  // Reset Password
+  Future<void> resetPassword(String email) async {
+    try {
+      await _authService.sendPasswordResetEmail(email: email);
+      Get.snackbar('Success', 'Password reset email sent to $email');
+    } catch (e) {
+      print('Error during password reset: $e');
+      Get.snackbar('Error', 'Error during password reset: $e');
+    }
+  }
+}
+
+extension on AuthService {
+  sendPasswordResetEmail({required String email}) {}
 }

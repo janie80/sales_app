@@ -20,7 +20,7 @@ class AdminDashboard extends StatelessWidget {
           onPressed: () async {
             final authService = Provider.of<AuthService>(context, listen: false);
             await authService.signOut();
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) =>  AdminLoginScreen()));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) =>  const AdminLoginScreen()));
           },
         ),
       ]),

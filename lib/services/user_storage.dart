@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sales_app/models/user_model.dart';
 
 class UserStorage {
@@ -9,9 +10,13 @@ class UserStorage {
   Future<void> saveUser(UserModel user) async {
     try {
       await _usersCollection.doc(user.uid).set(user.toJson());
-      print("User Saved: ${user.uid}");
+      if (kDebugMode) {
+        print("User Saved: ${user.uid}");
+      }
     } catch (e) {
-      print("Error Saving User: ${e.toString()}");
+      if (kDebugMode) {
+        print("Error Saving User: ${e.toString()}");
+      }
     }
   }
 
@@ -20,39 +25,28 @@ class UserStorage {
     try {
       DocumentSnapshot<Map<String, dynamic>> snapshot =
       await _usersCollection.doc(uid).get();
-      if (snapshot.exists) {
-        return UserModel.fromSnap(snapshot);
+
+      if (snapshot.exists && snapshot.data() != null) {
+        final data = snapshot.data();
+        if (data is Map<String, dynamic>) {
+          return UserModel.fromFirestore(data, uid);
+        } else {
+          if (kDebugMode) {
+            print("Unexpected data format for user $uid: ${data.runtimeType}");
+          }
+          return null;
+        }
       } else {
-        print("User not found: $uid");
+        if (kDebugMode) {
+          print("User not found: $uid");
+        }
         return null;
       }
     } catch (e) {
-      print("Error Getting User: ${e.toString()}");
+      if (kDebugMode) {
+        print("Error Getting User: ${e.toString()}");
+      }
       return null;
-    }
-  }
-
-  // Update user's email in Firestore
-  Future<bool> updateUserEmail(String uid, String newEmail) async {
-    try {
-      await _usersCollection.doc(uid).update({"email": newEmail});
-      print("User Email Updated: $newEmail");
-      return true;
-    } catch (e) {
-      print("Error Updating User Email: ${e.toString()}");
-      return false;
-    }
-  }
-
-  // Delete user from Firestore
-  Future<bool> deleteUser(String uid) async {
-    try {
-      await _usersCollection.doc(uid).delete();
-      print("User Deleted: $uid");
-      return true;
-    } catch (e) {
-      print("Error Deleting User: ${e.toString()}");
-      return false;
     }
   }
 }
